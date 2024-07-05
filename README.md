@@ -6,7 +6,7 @@ CMaker is a CLI CMake.txt generator.
 operations:
 ``` bash
 cmaker {-h --help}
-cmaker {-V --version}
+cmaker {-v --version}
 cmaker {-M --make}
 cmaker {-R --remove}
 ```
