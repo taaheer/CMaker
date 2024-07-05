@@ -3,6 +3,7 @@
 #include "CLI/Config.hpp"
 
 #include <fstream>
+#include <filesystem>
 #include <iostream>
 
 constexpr std::string gFilename{"CMakeLists.txt"};
@@ -12,7 +13,7 @@ void generateCMake([[maybe_unused]]std::size_t count)
     std::cout << "Generating " << gFilename << '\n';
 
     std::ofstream cmake{gFilename};
-    if (!cmake.is_open())
+    if(!cmake.is_open())
     {
         std::cerr << "Failed to generate " << gFilename << '\n';
         return;
@@ -26,6 +27,24 @@ void generateCMake([[maybe_unused]]std::size_t count)
 void removeCMake([[maybe_unused]]std::size_t count)
 {
     std::cout << "Removing " << gFilename << '\n';
+
+    if(std::filesystem::exists(gFilename))
+    {
+        std::cout << gFilename << " found\n";
+
+        if(std::filesystem::remove(gFilename))
+        {
+            std::cout << "Removed\n";
+        }
+        else
+        {
+            std::cerr << "Error removing\n";
+        }
+    }
+    else
+    {
+        std::cerr << gFilename << " not found\n";
+    }
 }
 
 int main(int argc, char **argv) 
