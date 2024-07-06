@@ -7,7 +7,7 @@
 #include <filesystem>   // to delete file
 #include <iostream>     // for input and output
 #include <cctype>       // for std::isfigit()
-#include <string>       // for strings and std::stof
+#include <string>       // for strings and std::stod
 
 constexpr std::string gFilename{"CMakeLists.txt"};
 constexpr std::string gDefaultCMakeMiniumRequired{"3.12"};
@@ -74,7 +74,7 @@ bool isCMakeVersionValid(const std::string& input)
     }
 }
 
-std::string getVersionInput()
+std::string getCMakeVersion()
 {
     std::string input{};
     do
@@ -96,12 +96,6 @@ std::string getVersionInput()
     
 }
 
-std::string addVersion()
-{
-    std::string version{getVersionInput()};
-    return version;
-}
-
 void generateCMake([[maybe_unused]]std::size_t count)
 {
     std::cout << "Generating " << gFilename << '\n';
@@ -114,8 +108,7 @@ void generateCMake([[maybe_unused]]std::size_t count)
     }
 
     cmake << addHeader();
-    cmake << addVersion();
-
+    cmake << "cmake_minimum_required(VERSION " << getCMakeVersion() << ")\n\n";
     
     // actually saving in directory
     cmake.close();
