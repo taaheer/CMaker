@@ -10,7 +10,7 @@
 #include <string>       // for strings and std::stod
 
 constexpr std::string gFilename{"CMakeLists.txt"};
-constexpr std::string gDefaultCMakeMiniumRequired{"3.12"};
+constexpr std::string gDefaultCMakeMiniumRequired{"3.7...2.29"};
 
 // Minimum for many modern practices, released in June 2014
 constexpr double gLeastMinimumVersion{3.0};
