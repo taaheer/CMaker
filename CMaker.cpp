@@ -109,6 +109,7 @@ void generateCMake([[maybe_unused]]std::size_t count)
 
     cmake << addHeader();
     cmake << "cmake_minimum_required(VERSION " << getCMakeVersion() << ")\n\n";
+    cmake << "project(" << getProjectName() << " VERSION " << getProjectVersion() << " DESCRIPTION " << getProjectDescription() << " LANGUAGES " << getProjectLanguage() <<")\n\n";
     
     // actually saving in directory
     cmake.close();
