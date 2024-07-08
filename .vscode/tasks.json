@@ -33,6 +33,7 @@
                 "-std=c++23",
                 "${file}",
                 "-I${fileDirname}/CLI11/include",
+                "CMake.cpp",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
