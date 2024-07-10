@@ -13,7 +13,7 @@ class CMake
     const double latestAvailableVersion{3.3};
 
     std::string addHeader() const;
-    std::string getCMakeVersion() const;
+    std::string setCMakeVersion() const;
     bool isCMakeVersionValid(const std::string& input) const;
     bool isNumeric(const std::string& input) const;
 

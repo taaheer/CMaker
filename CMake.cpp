@@ -13,7 +13,7 @@ std::string CMake::addHeader() const
     "# With modern pratice and suggestion from https://cliutils.gitlab.io/modern-cmake/\n\n";
 }
 
-std::string CMake::getCMakeVersion() const
+std::string CMake::setCMakeVersion() const
 {
     std::string input{};
     do
@@ -89,7 +89,7 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count) const
     }
 
     cmake << addHeader();
-    cmake << "cmake_minimum_required(VERSION " << getCMakeVersion() << ")\n\n";
+    cmake << "cmake_minimum_required(VERSION " << setCMakeVersion() << ")\n\n";
     // cmake << "project(" << getProjectName() << " VERSION " << getProjectVersion() << " DESCRIPTION " << getProjectDescription() << " LANGUAGES " << getProjectLanguage() <<")\n\n";
 
 
