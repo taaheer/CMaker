@@ -1,6 +1,8 @@
 #include "Project.h"
 
-#include <set>
+#include <set> // for std::sets
+#include <iostream> // for input and output
+#include <string> // for string 
 
 bool Project::isProjectNameValid(const std::string &name) const
 {
@@ -32,6 +34,7 @@ bool Project::isContainReservedWords(const std::string &name) const
 {
     std::array<std::string, 3> cmakeListCommands{"cmake --help-command-list", "cmake --help-variable-list", "cmake --help-property-list"};
 
+    // CppCheck is advicing to use std::any_of but when using std::any_of and lambda, it became slower and take more than with current code
     for(const std::string &command : cmakeListCommands)
     {
         static const std::set<std::string> listOfReservedCommand{getReservedListOf(command)};
