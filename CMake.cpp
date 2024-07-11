@@ -1,10 +1,11 @@
 #include "CMake.h"
 
+#include "Utility.cpp"
+
 #include <iostream>     // for input and output
 #include <fstream>      // for creating file
 #include <filesystem>   // for deleting file
 #include <iostream>     // for input and output
-#include <cctype>       // for std::isfigit()
 #include <string>       // for strings and std::stod
 
 std::string CMake::addHeader() const
@@ -42,7 +43,7 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     {
         return true;
     }
-    else if(isNumeric(input))
+    else if(Utility::isNumeric(input))
     {
         double inputVersion(std::stod(input));
 
@@ -69,15 +70,6 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
         std::cerr << "Error: wrong input, please enter correct minimum version\n";
         return false;
     }
-}
-
-// check if string is numeric decimal.
-bool CMake::isNumeric(const std::string &input) const
-{
-    return std::all_of(input.begin(), input.end(), [](char c)
-    {
-        return std::isdigit(c) || c == '.';
-    });
 }
 
 void CMake::generateCMake([[maybe_unused]]std::size_t count) const

@@ -15,7 +15,6 @@ class CMake
     std::string addHeader() const;
     std::string setCMakeVersion() const;
     bool isCMakeVersionValid(const std::string& input) const;
-    bool isNumeric(const std::string& input) const;
 
     public:
     
