@@ -24,6 +24,7 @@ std::string CMake::setCMakeVersion() const
     }
     while(!isCMakeVersionValid(input));
 
+    // user hit enter to set default version
     if(input.empty())
     {
         return defaultVersion;
@@ -36,6 +37,7 @@ std::string CMake::setCMakeVersion() const
 
 bool CMake::isCMakeVersionValid(const std::string &input) const
 {
+    // user hit enter for default version
     if(input.empty())
     {
         return true;
@@ -69,6 +71,7 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     }
 }
 
+// check if string is numeric decimal.
 bool CMake::isNumeric(const std::string &input) const
 {
     return std::all_of(input.begin(), input.end(), [](char c)

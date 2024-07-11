@@ -10,12 +10,14 @@
 
 int main(int argc, char **argv) 
 {
+    // if not argument was entetered
     if(argc == 1)
     {
         std::cerr << "Error: no operation specified (use -h or --help for help)\n";
         return -1;
     }
 
+    // app description
     CLI::App app{"CMaker is CLI CMake generator"};
 
     CMake cmake{};
