@@ -25,6 +25,21 @@ void CMake::setVersion()
     while(!isCMakeVersionValid(version));
 }
 
+std::string CMake::addCMakePolicy() const
+{
+    std::string lessThanVersion{"3.12"};
+    if(!version.empty())
+    {
+        lessThanVersion = version;
+    }
+
+    std::string policy{"if(${CMAKE_VERSION} VERSION_LESS " + lessThanVersion + ")\n"
+    "\tcmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})\n"
+    "endif()\n\n"};
+
+    return policy;
+}
+
 bool CMake::isCMakeVersionValid(const std::string &input) const
 {
     // user hit enter for default version
@@ -88,6 +103,7 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     cmake << addHeader();
     cmake << "cmake_minimum_required(VERSION " << getVersion() << ")\n\n";
+    cmake << addCMakePolicy();
     // cmake << "project(" << getProjectName() << " VERSION " << getProjectVersion() << " DESCRIPTION " << getProjectDescription() << " LANGUAGES " << getProjectLanguage() <<")\n\n";
 
 

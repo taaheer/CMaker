@@ -15,6 +15,7 @@ class CMake
 
     std::string addHeader() const;
     void setVersion();
+    std::string addCMakePolicy() const;
     bool isCMakeVersionValid(const std::string& input) const;
 
     std::string getVersion() const;
