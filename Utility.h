@@ -3,9 +3,11 @@
 
 #include <string>   // for strings    
 
-namespace Utility{
+namespace Utility
+{
     // check if string is numeric decimal.
-    bool isNumeric(const std::string &str);
+    bool isStringNumeric(const std::string &str);
+    bool isStringHasSpace(const std::string &str);
 }
 
 #endif

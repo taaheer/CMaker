@@ -47,7 +47,7 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     {
         return true;
     }
-    else if(Utility::isNumeric(input))
+    else if(Utility::isStringNumeric(input))
     {
         double inputVersion(std::stod(input));
 

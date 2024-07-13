@@ -7,24 +7,23 @@
 class Project
 {
     private:
-    std::string projectName{};
-    std::string projectVersion{};
+    std::string name{};
+    std::string version{};
     std::string projectDescription{};
 
-    bool isProjectNameValid(const std::string& name) const;
-    bool isStringHasSpace(const std::string& name) const;
-    bool isContainReservedWords(const std::string& name) const;
+    bool isProjectNameValid() const;
+    bool isContainReservedWords() const;
     std::set<std::string> getReservedListOf(const std::string &argument) const;
 
 
     public:
 
     void setName();
-    std::string setProjectName() const;
-    std::string setProjectVersion() const;
+    void setVersion();
     std::string setProjectDescription() const;
 
     std::string getName() const;
+    std::string getVersion() const;
 };
 
 #endif

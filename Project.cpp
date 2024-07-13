@@ -1,21 +1,23 @@
 #include "Project.h"
 
+#include "Utility.h"
+
 #include <set> // for std::sets
 #include <iostream> // for input and output
 #include <string> // for string 
 
-bool Project::isProjectNameValid(const std::string &name) const
+bool Project::isProjectNameValid() const
 {
     if(name.empty())
     {
         return false;
     }
-    else if(isStringHasSpace(name))
+    else if(Utility::isStringHasSpace(name))
     {
         std::cerr << "Error: spaces not allowed\n";
         return false;
     }
-    else if(isContainReservedWords(name))
+    else if(isContainReservedWords())
     {
         return false;
     }
@@ -25,12 +27,7 @@ bool Project::isProjectNameValid(const std::string &name) const
     }
 }
 
-bool Project::isStringHasSpace(const std::string &name) const
-{
-    return name.find_first_not_of("\t\n ") == name.npos;
-}
-
-bool Project::isContainReservedWords(const std::string &name) const
+bool Project::isContainReservedWords() const
 {
     std::array<std::string, 3> cmakeListCommands{"cmake --help-command-list", "cmake --help-variable-list", "cmake --help-property-list"};
 
@@ -77,12 +74,27 @@ void Project::setName()
     do
     {
         std::cout << "Please enter project name: ";
-        std::getline(std::cin, projectName);
+        std::getline(std::cin, name);
     }
-    while(!isProjectNameValid(projectName));
+    while(!isProjectNameValid());
+}
+
+void Project::setVersion()
+{
+    do
+    {
+        std::cout << "Enter Project Version: ";
+        std::getline(std::cin, version);
+    }
+    while(!Utility::isStringNumeric(version));
 }
 
 std::string Project::getName() const
 {
-    return projectName;
+    return name;
+}
+
+std::string Project::getVersion() const
+{
+    return version;
 }
