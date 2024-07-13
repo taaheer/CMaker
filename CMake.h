@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "Project.h"
+
 constexpr std::string gFilename{"CMakeLists.txt"};
 
 class CMake
@@ -13,10 +15,13 @@ class CMake
     static constexpr double leastMinimumVersion{3.0};
     static constexpr double latestAvailableVersion{3.3};
 
-    std::string addHeader() const;
-    void setVersion();
+    std::string addHeaderComment() const;
     std::string addCMakePolicy() const;
     bool isCMakeVersionValid(const std::string& input) const;
+    void writeMinimumVersion(std::ofstream &cmakeFile) const;
+    void settingProject(std::ofstream &cmakeFile, const Project &project) const;
+
+    void setVersion();
 
     std::string getVersion() const;
 
