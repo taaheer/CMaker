@@ -89,6 +89,12 @@ void Project::setVersion()
     while(!Utility::isStringNumeric(version));
 }
 
+void Project::setDescription()
+{
+    std::cout << "Enter Project description:";
+    std::getline(std::cin, description);
+}
+
 std::string Project::getName() const
 {
     return name;
@@ -97,4 +103,9 @@ std::string Project::getName() const
 std::string Project::getVersion() const
 {
     return version;
+}
+
+std::string Project::getDescription() const
+{
+    return description;
 }

@@ -9,7 +9,7 @@ class Project
     private:
     std::string name{};
     std::string version{};
-    std::string projectDescription{};
+    std::string description{};
 
     bool isProjectNameValid() const;
     bool isContainReservedWords() const;
@@ -20,10 +20,11 @@ class Project
 
     void setName();
     void setVersion();
-    std::string setProjectDescription() const;
+    void setDescription();
 
     std::string getName() const;
     std::string getVersion() const;
+    std::string getDescription() const;
 };
 
 #endif
