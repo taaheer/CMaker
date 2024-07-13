@@ -14,26 +14,15 @@ std::string CMake::addHeader() const
     "# With modern pratice and suggestion from https://cliutils.gitlab.io/modern-cmake/\n\n";
 }
 
-std::string CMake::setCMakeVersion() const
+void CMake::setVersion()
 {
-    std::string input{};
     do
     {
         std::cout << "Enter version: ";
 
-        std::getline(std::cin, input);
+        std::getline(std::cin, version);
     }
-    while(!isCMakeVersionValid(input));
-
-    // user hit enter to set default version
-    if(input.empty())
-    {
-        return defaultVersion;
-    }
-    else
-    {
-        return input;
-    }
+    while(!isCMakeVersionValid(version));
 }
 
 bool CMake::isCMakeVersionValid(const std::string &input) const
@@ -72,7 +61,19 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     }
 }
 
-void CMake::generateCMake([[maybe_unused]]std::size_t count) const
+std::string CMake::getVersion() const
+{
+    if(version.empty())
+    {
+        return defaultVersion;
+    }
+    else
+    {
+        return version;
+    }
+}
+
+void CMake::generateCMake([[maybe_unused]]std::size_t count)
 {
     std::cout << "Generating " << gFilename << '\n';
 
@@ -83,8 +84,10 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count) const
         return;
     }
 
+    setVersion();
+
     cmake << addHeader();
-    cmake << "cmake_minimum_required(VERSION " << setCMakeVersion() << ")\n\n";
+    cmake << "cmake_minimum_required(VERSION " << getVersion() << ")\n\n";
     // cmake << "project(" << getProjectName() << " VERSION " << getProjectVersion() << " DESCRIPTION " << getProjectDescription() << " LANGUAGES " << getProjectLanguage() <<")\n\n";
 
 
