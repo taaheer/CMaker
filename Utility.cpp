@@ -6,11 +6,6 @@
 
 bool Utility::isStringNumeric(const std::string &str)
 {
-    if(str.empty())
-    {
-        return false;
-    }
-    
     return std::all_of(str.begin(), str.end(), [](char c)
     {
         return std::isdigit(c) || c == '.';

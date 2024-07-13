@@ -104,6 +104,8 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     Project project{};
 
+    std::cout << "Setting a project\n";
+
     project.setName();
     project.setVersion();
     project.setDescription();
@@ -112,9 +114,21 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
     cmake << addHeader();
     cmake << "cmake_minimum_required(VERSION " << getVersion() << ")\n\n";
     cmake << addCMakePolicy();
-    cmake << "project(" << project.getName() << " VERSION " << project.getVersion() 
-            << " DESCRIPTION \"" << project.getDescription() << "\""
-            << " LANGUAGES " << project.getLanguage() <<")\n\n";
+    cmake << "project(" << project.getName(); 
+
+    if(!project.getVersion().empty())
+    {
+        cmake << " VERSION " << project.getVersion();
+    }
+
+    if(!project.getDescription().empty())
+    {
+        cmake << " DESCRIPTION \"" << project.getDescription() << "\"";
+    }
+            
+    cmake << " LANGUAGES " << project.getLanguage() <<")\n\n";
+
+    std::cout << "Making an executable\n";
 
 
     cmake.close();
