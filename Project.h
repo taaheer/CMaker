@@ -10,10 +10,14 @@ class Project
     std::string name{};
     std::string version{};
     std::string description{};
+    std::string language{};
+    static constexpr std::array<std::string, 7> supportedLanguages{"C", "CXX", "Fortan", "ASM", "CUDA", "CSharp", "SWIFT"};
+
 
     bool isProjectNameValid() const;
     bool isContainReservedWords() const;
     std::set<std::string> getReservedListOf(const std::string &argument) const;
+    bool isLanguageSupported();
 
 
     public:
@@ -21,10 +25,12 @@ class Project
     void setName();
     void setVersion();
     void setDescription();
+    void setLanguage();
 
     std::string getName() const;
     std::string getVersion() const;
     std::string getDescription() const;
+    std::string getLanguage() const;
 };
 
 #endif

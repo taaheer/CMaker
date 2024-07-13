@@ -1,4 +1,5 @@
 #include "CMake.h"
+#include "Project.h"
 
 #include "Utility.cpp"
 
@@ -101,10 +102,19 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     setVersion();
 
+    Project project{};
+
+    project.setName();
+    project.setVersion();
+    project.setDescription();
+    project.setLanguage();
+
     cmake << addHeader();
     cmake << "cmake_minimum_required(VERSION " << getVersion() << ")\n\n";
     cmake << addCMakePolicy();
-    // cmake << "project(" << getProjectName() << " VERSION " << getProjectVersion() << " DESCRIPTION " << getProjectDescription() << " LANGUAGES " << getProjectLanguage() <<")\n\n";
+    cmake << "project(" << project.getName() << " VERSION " << project.getVersion() 
+            << " DESCRIPTION \"" << project.getDescription() << "\""
+            << " LANGUAGES " << project.getLanguage() <<")\n\n";
 
 
     cmake.close();
