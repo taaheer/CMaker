@@ -72,15 +72,17 @@ std::set<std::string> Project::getReservedListOf(const std::string &argument) co
     return reservedWords;
 }
 
-std::string Project::setProjectName() const
+void Project::setName()
 {
-    std::string name{};
     do
     {
         std::cout << "Please enter project name: ";
-        std::getline(std::cin, name);
+        std::getline(std::cin, projectName);
     }
-    while(!isProjectNameValid(name));
+    while(!isProjectNameValid(projectName));
+}
 
-    return name;
+std::string Project::getName() const
+{
+    return projectName;
 }

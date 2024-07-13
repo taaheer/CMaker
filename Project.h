@@ -19,9 +19,12 @@ class Project
 
     public:
 
+    void setName();
     std::string setProjectName() const;
     std::string setProjectVersion() const;
     std::string setProjectDescription() const;
+
+    std::string getName() const;
 };
 
 #endif

@@ -10,8 +10,8 @@ class CMake
     private:
     std::string version{};
     const std::string defaultVersion{"3.7...3.29"};
-    static const double leastMinimumVersion{3.0};
-    static const double latestAvailableVersion{3.3};
+    static constexpr double leastMinimumVersion{3.0};
+    static constexpr double latestAvailableVersion{3.3};
 
     std::string addHeader() const;
     void setVersion();
