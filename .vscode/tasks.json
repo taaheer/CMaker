@@ -35,6 +35,7 @@
                 "-I${fileDirname}/CLI11/include",
                 "CMake.cpp",
                 "Project.cpp",
+                "Common.cpp",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

@@ -15,8 +15,6 @@ class Project
 
 
     bool isProjectNameValid() const;
-    bool isContainReservedWords() const;
-    std::set<std::string> getReservedListOf(const std::string &argument) const;
     bool isLanguageSupported();
 
 

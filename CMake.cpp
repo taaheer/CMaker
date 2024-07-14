@@ -2,6 +2,7 @@
 #include "Project.h"
 
 #include "Utility.cpp"
+#include "Common.h"
 
 #include <iostream>     // for input and output
 #include <fstream>      // for creating file
@@ -24,6 +25,48 @@ void CMake::setVersion()
         std::getline(std::cin, version);
     }
     while(!isCMakeVersionValid(version));
+}
+
+void CMake::setExecutableName()
+{
+    do
+    {
+        std::cout << "Enter executable or just enter project name as executable\n";
+        std::getline(std::cin, executableName);
+    }
+    while(Common::isContainReservedWords(executableName));
+}
+
+void CMake::setFileSource()
+{
+    std::string source{};
+    bool isValid{false};
+
+    while(!isValid)
+    {
+        std::cout << "Enter file sources or just enter for next step: ";
+        std::getline(std::cin, source);
+
+        if(source.empty())
+        {
+            if(fileSources.empty())
+            {
+                std::cerr << "Error: need at least one source\n";
+            }
+            else
+            {
+                isValid = true;
+            }
+        }
+        else if(Utility::isFileExist(source))
+        {
+            fileSources.push_back(source);
+        }
+        else
+        {
+            std::cerr << "Error: " << source << " does not exist\n";
+        }
+    }
 }
 
 std::string CMake::addCMakePolicy() const
@@ -100,6 +143,21 @@ void CMake::settingProject(std::ofstream &cmakeFile, const Project &project) con
     cmakeFile << " LANGUAGES " << project.getLanguage() <<")\n\n";
 }
 
+void CMake::settingExecutable(std::ofstream &cmakeFile, const Project &project)
+{
+    setExecutableName();
+    setFileSource();
+
+    cmakeFile << "add_executable( " << getExecutableName(project) << ' ';
+    
+    for(const std::string &source : getFileSource())
+    {
+        cmakeFile << source << ' ';
+    }
+
+    cmakeFile << ")\n\n";
+}
+
 std::string CMake::getVersion() const
 {
     if(version.empty())
@@ -110,6 +168,23 @@ std::string CMake::getVersion() const
     {
         return version;
     }
+}
+
+std::string CMake::getExecutableName(const Project &project) const
+{
+    if(executableName.empty())
+    {
+        return project.getName();
+    }
+    else
+    {
+        return executableName;
+    }
+}
+
+std::vector<std::string> CMake::getFileSource() const
+{
+    return fileSources;
 }
 
 void CMake::generateCMake([[maybe_unused]]std::size_t count)
@@ -138,6 +213,7 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     writeMinimumVersion(cmakeFile);
     settingProject(cmakeFile, project);
+    settingExecutable(cmakeFile, project);
 
     cmakeFile.close();
 
