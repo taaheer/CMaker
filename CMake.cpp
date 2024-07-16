@@ -1,7 +1,7 @@
 #include "CMake.h"
 #include "Project.h"
 
-#include "Utility.cpp"
+#include "Utility.h"
 #include "Common.h"
 
 #include <iostream>     // for input and output
