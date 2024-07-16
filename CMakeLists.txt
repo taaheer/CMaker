@@ -12,7 +12,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_subdirectory(CLI11)
 
 # Add the main executable
-add_executable(cmake
+add_executable(cmaker
     CMake.cpp
     CMaker.cpp
     Common.cpp
@@ -21,5 +21,5 @@ add_executable(cmake
 )
 
 # Link libraries to the main executable
-target_link_libraries(cmake PRIVATE CLI11)
+target_link_libraries(cmaker PRIVATE CLI11)
 
