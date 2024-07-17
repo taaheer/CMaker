@@ -1,5 +1,7 @@
 #include "Common.h"
 
+#include "Utility.h"
+
 #include <iostream>
 #include <string>
 #include <array>
@@ -45,4 +47,25 @@ std::set<std::string> Common::getReservedListOf(const std::string &argument)
 
     pclose(pipe);
     return reservedWords;
+}
+
+bool Common::isNameValid(const std::string &name, const bool isEmptyEnterValid)
+{
+    if(name.empty())
+    {
+        return isEmptyEnterValid;
+    }
+    else if(Utility::isStringHasSpace(name))
+    {
+        std::cerr << "Error: spaces not allowed\n";
+        return false;
+    }
+    else if(Common::isContainReservedWords(name))
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

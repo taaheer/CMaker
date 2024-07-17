@@ -8,6 +8,13 @@
 
 constexpr std::string gFilename{"CMakeLists.txt"};
 
+struct LibraryInfo
+{
+    std::string name{};
+    std::string type{};
+    std::string source{};
+};
+
 class CMake
 {
     private:
@@ -17,6 +24,7 @@ class CMake
     static constexpr double latestAvailableVersion{3.3};
     std::string executableName{};
     std::vector<std::string> fileSources{};
+    std::vector<LibraryInfo> libraries{};
 
     std::string addHeaderComment() const;
     std::string addCMakePolicy() const;
@@ -24,6 +32,12 @@ class CMake
     void writeMinimumVersion(std::ofstream &cmakeFile) const;
     void settingProject(std::ofstream &cmakeFile, const Project &project) const;
     void settingExecutable(std::ofstream &cmakeFile, const Project &project);
+    void settingLibrary(std::ofstream &cmakeFile);
+    bool isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types);
+
+    std::string getLibraryNameFromUser();
+    std::string getLibraryTypeFromUser();
+    std::string getLibrarySourceFromUser();
 
     void setVersion();
     void setExecutableName();

@@ -9,6 +9,7 @@
 #include <filesystem>   // for deleting file
 #include <iostream>     // for input and output
 #include <string>       // for strings and std::stod
+#include <algorithm>    // for std::find
 
 std::string CMake::addHeaderComment() const
 {
@@ -21,7 +22,6 @@ void CMake::setVersion()
     do
     {
         std::cout << "Enter version (enter to set default): ";
-
         std::getline(std::cin, version);
     }
     while(!isCMakeVersionValid(version));
@@ -29,12 +29,13 @@ void CMake::setVersion()
 
 void CMake::setExecutableName()
 {
+    constexpr bool isEmptyEnterValid{true};
     do
     {
         std::cout << "Enter executable (enter project name as executable): ";
         std::getline(std::cin, executableName);
     }
-    while(Common::isContainReservedWords(executableName));
+    while(!Common::isNameValid(executableName, isEmptyEnterValid));
 }
 
 void CMake::setFileSource()
@@ -93,7 +94,7 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     }
     else if(Utility::isStringNumeric(input))
     {
-        double inputVersion(std::stod(input));
+        const double inputVersion(std::stod(input));
 
         if(inputVersion < 0)
         {
@@ -158,6 +159,134 @@ void CMake::settingExecutable(std::ofstream &cmakeFile, const Project &project)
     cmakeFile << ")\n\n";
 }
 
+void CMake::settingLibrary(std::ofstream &cmakeFile)
+{
+    LibraryInfo library{};
+
+    while(true)
+    {
+        library.name = getLibraryNameFromUser();
+
+        if(library.name.empty())
+        {
+            break;
+        }
+
+        library.type = getLibraryTypeFromUser();
+        library.source = getLibrarySourceFromUser();
+
+        std::cout << library.name << ' ' << library.type << ' ' << library.source;
+        libraries.push_back(library);
+    }
+
+    for(const LibraryInfo &lib : libraries)
+    {
+        cmakeFile << "add_library(" << lib.name << ' ' << lib.type << ' ' << lib.source << ")\n";
+    }
+
+    std::cout << "\n";
+}
+
+bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types)
+{
+    if(type.empty())
+    {
+        return true;
+    }
+    else if(Utility::isStringNumeric(type))
+    {
+        const int typeNumber{std::stoi(type)};
+
+        if(typeNumber >= 0 && typeNumber < static_cast<int>(types.size()))
+        {
+            return true;
+        }
+
+        std::cerr << "Erro: " << typeNumber << " does not correspond to any type\n";
+        
+        return false;
+    }
+    else if(std::find(types.begin(), types.end(), type) != types.end())
+    {
+        return true;
+    }
+    else
+    {
+        std::cerr << "Error: does not recognise " << type << '\n';
+        return false;
+    }
+}
+
+std::string CMake::getLibraryNameFromUser()
+{
+    std::string name{};
+    constexpr bool isEmptyEnterValid{true};
+    do
+    {
+        std::cout << "Enter library name (enter for next step): ";
+        std::getline(std::cin, name);
+    }
+    while(!Common::isNameValid(name, isEmptyEnterValid));
+
+    return name;
+}
+
+std::string CMake::getLibraryTypeFromUser()
+{
+    std::string type{};
+    const std::array<std::string, 3> types{"STATIC", "SHARED", "MODULE"};
+
+    do
+    {
+        std::cout << "Enter library type (enter for default): ";
+        std::getline(std::cin, type);
+    }
+    while(!isLibraryTypeValid(type, types));
+
+    if(type.empty())
+    {
+        return "";
+    }
+    else if(Utility::isStringNumeric(type))
+    {
+        int typeNumber{std::stoi(type)};
+
+        return types[static_cast<std::size_t>(typeNumber)];
+    }
+    else
+    {
+        return type;
+    }
+}
+
+std::string CMake::getLibrarySourceFromUser()
+{
+    std::string source{};
+
+    bool isSourceValid{false};
+
+    while(!isSourceValid)
+    {
+        std::cout << "Enter the source: ";
+        std::getline(std::cin, source);
+
+        if(source.empty())
+        {
+            std::cerr << "Error: no source provided\n";
+        }
+        else if(Utility::isFileExist(source))
+        {
+            return source;
+        }
+        else
+        {
+            std::cerr << "Error: source does not exist\n";
+        }
+    }
+
+    return source;
+}
+
 std::string CMake::getVersion() const
 {
     if(version.empty())
@@ -212,6 +341,8 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
     writeMinimumVersion(cmakeFile);
     settingProject(cmakeFile, project);
     settingExecutable(cmakeFile, project);
+
+    settingLibrary(cmakeFile);
 
     cmakeFile.close();
 

@@ -15,7 +15,7 @@ bool Utility::isStringNumeric(const std::string &str)
 
 bool Utility::isStringHasSpace(const std::string &str)
 {
-    return str.find_first_not_of("\t\n ") == str.npos;
+    return str.find(' ') != str.npos;
 }
 
 bool Utility::isFileExist(const std::string &str)

@@ -8,27 +8,6 @@
 #include <string> // for string 
 #include <algorithm> // for std::find
 
-bool Project::isProjectNameValid() const
-{
-    if(name.empty())
-    {
-        return false;
-    }
-    else if(Utility::isStringHasSpace(name))
-    {
-        std::cerr << "Error: spaces not allowed\n";
-        return false;
-    }
-    else if(Common::isContainReservedWords(name))
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
 bool Project::isLanguageSupported()
 {
     if (std::find(supportedLanguages.begin(), supportedLanguages.end(), language) != supportedLanguages.end()) 
@@ -49,7 +28,7 @@ void Project::setName()
         std::cout << "Please enter project name: ";
         std::getline(std::cin, name);
     }
-    while(!isProjectNameValid());
+    while(!Common::isNameValid(name));
 }
 
 void Project::setVersion()
