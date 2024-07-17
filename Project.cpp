@@ -56,7 +56,7 @@ void Project::setVersion()
 {
     do
     {
-        std::cout << "Enter Project Version: ";
+        std::cout << "Enter Project Version (enter to skip): ";
         std::getline(std::cin, version);
     }
     while(!Utility::isStringNumeric(version));
@@ -64,7 +64,7 @@ void Project::setVersion()
 
 void Project::setDescription()
 {
-    std::cout << "Enter Project description: ";
+    std::cout << "Enter Project description (enter to skip): ";
     std::getline(std::cin, description);
 }
 

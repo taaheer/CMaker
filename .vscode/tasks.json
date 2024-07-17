@@ -36,6 +36,7 @@
                 "CMake.cpp",
                 "Project.cpp",
                 "Common.cpp",
+                "Utility.cpp",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

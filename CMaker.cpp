@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     }
 
     // app description
-    CLI::App app{"CMaker is CLI CMake generator"};
+    CLI::App app{"CMaker is a command line CMakelists.txt generator"};
 
     CMake cmake{};
 

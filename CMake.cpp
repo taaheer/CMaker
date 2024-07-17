@@ -20,7 +20,7 @@ void CMake::setVersion()
 {
     do
     {
-        std::cout << "Enter version: ";
+        std::cout << "Enter version (enter to set default): ";
 
         std::getline(std::cin, version);
     }
@@ -31,7 +31,7 @@ void CMake::setExecutableName()
 {
     do
     {
-        std::cout << "Enter executable or just enter project name as executable\n";
+        std::cout << "Enter executable (enter project name as executable): ";
         std::getline(std::cin, executableName);
     }
     while(Common::isContainReservedWords(executableName));
@@ -44,7 +44,7 @@ void CMake::setFileSource()
 
     while(!isValid)
     {
-        std::cout << "Enter file sources or just enter for next step: ";
+        std::cout << "Enter file sources (enter for next step): ";
         std::getline(std::cin, source);
 
         if(source.empty())
@@ -201,8 +201,6 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
     setVersion();
 
     Project project{};
-
-    std::cout << "Setting a project\n";
 
     project.setName();
     project.setVersion();
