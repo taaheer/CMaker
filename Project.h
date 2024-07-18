@@ -14,7 +14,6 @@ class Project
     static constexpr std::array<std::string, 7> supportedLanguages{"C", "CXX", "Fortan", "ASM", "CUDA", "CSharp", "SWIFT"};
 
 
-    bool isProjectNameValid() const;
     bool isLanguageSupported();
 
 

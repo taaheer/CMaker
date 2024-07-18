@@ -53,6 +53,11 @@ bool Common::isNameValid(const std::string &name, const bool isEmptyEnterValid)
 {
     if(name.empty())
     {
+        if(!isEmptyEnterValid)
+        {
+            std::cerr << "Error: no input was provided\n";
+        }
+
         return isEmptyEnterValid;
     }
     else if(Utility::isStringHasSpace(name))

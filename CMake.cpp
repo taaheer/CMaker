@@ -59,7 +59,7 @@ void CMake::setFileSource()
                 isValid = true;
             }
         }
-        else if(Utility::isFileExist(source))
+        else if(Utility::isSourceExist(source))
         {
             fileSources.push_back(source);
         }
@@ -127,7 +127,7 @@ void CMake::writeMinimumVersion(std::ofstream &cmakeFile) const
     cmakeFile << addCMakePolicy();
 }
 
-void CMake::settingProject(std::ofstream &cmakeFile, const Project &project) const
+void CMake::writingProject(std::ofstream &cmakeFile, const Project &project) const
 {
     cmakeFile << "project(" << project.getName(); 
 
@@ -175,7 +175,6 @@ void CMake::settingLibrary(std::ofstream &cmakeFile)
         library.type = getLibraryTypeFromUser();
         library.source = getLibrarySourceFromUser();
 
-        std::cout << library.name << ' ' << library.type << ' ' << library.source;
         libraries.push_back(library);
     }
 
@@ -184,10 +183,45 @@ void CMake::settingLibrary(std::ofstream &cmakeFile)
         cmakeFile << "add_library(" << lib.name << ' ' << lib.type << ' ' << lib.source << ")\n";
     }
 
-    std::cout << "\n";
+    cmakeFile << "\n";
 }
 
-bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types)
+void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
+{
+    const std::array<std::string, 3> scopes{"INTERFACE", "PUBLIC", "PRIVATE"};
+    for(LibraryInfo &library : libraries)
+    {
+        do
+        {
+            std::cout << "scope of " << library.name << " ( ";
+            for(const std::string &option : scopes)
+            {
+                std::cout << option << ' ';
+            }
+            std::cout << "): ";
+            std::getline(std::cin, library.scope);
+        }
+        while(!isScopeValid(library.scope, scopes));
+
+        if(Utility::isStringNumeric(library.scope))
+        {
+            library.scope = Utility::getCorrespondingElementFromString(library.scope, scopes);
+        }
+
+        do
+        {
+            std::cout << "directory of " << library.name<< ": ";
+            std::getline(std::cin, library.directory);
+        }
+        while(!Utility::isSourceExist(library.directory));
+
+        cmakeFile << "target_include_directories(" << library.name << ' ' << library.scope << ' ' << library.directory << ")\n";
+    }
+
+    cmakeFile << '\n';
+}
+
+bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types) const
 {
     if(type.empty())
     {
@@ -195,26 +229,43 @@ bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::st
     }
     else if(Utility::isStringNumeric(type))
     {
-        const int typeNumber{std::stoi(type)};
-
-        if(typeNumber >= 0 && typeNumber < static_cast<int>(types.size()))
-        {
-            return true;
-        }
-
-        std::cerr << "Erro: " << typeNumber << " does not correspond to any type\n";
-        
-        return false;
+        return Utility::isNumericStringInRange(type, types);
     }
     else if(std::find(types.begin(), types.end(), type) != types.end())
     {
         return true;
     }
-    else
+
+    std::cerr << "Error: does not recognise " << type << '\n';
+    return false;
+}
+
+bool CMake::isScopeValid(const std::string &scope, const std::array<std::string, 3> &scopes) const
+{
+    if(scope.empty())
     {
-        std::cerr << "Error: does not recognise " << type << '\n';
+        std::cerr << "Error: scope is required\n";
         return false;
     }
+    else if(Utility::isStringNumeric(scope))
+    {
+        return Utility::isNumericStringInRange(scope, scopes);
+    }
+    else if(std::find(scopes.begin(), scopes.end(), scope) != scopes.end())
+    {
+        return true;
+    }
+
+    std::cerr << "Error: does not recognise " << scope << '\n';
+    return false;
+}
+
+void CMake::settingProject(Project &project) const
+{
+    project.setName();
+    project.setVersion();
+    project.setDescription();
+    project.setLanguage();
 }
 
 std::string CMake::getLibraryNameFromUser()
@@ -261,10 +312,9 @@ std::string CMake::getLibraryTypeFromUser()
 
 std::string CMake::getLibrarySourceFromUser()
 {
-    std::string source{};
-
     bool isSourceValid{false};
 
+    std::string source{};
     while(!isSourceValid)
     {
         std::cout << "Enter the source: ";
@@ -274,9 +324,9 @@ std::string CMake::getLibrarySourceFromUser()
         {
             std::cerr << "Error: no source provided\n";
         }
-        else if(Utility::isFileExist(source))
+        else if(Utility::isSourceExist(source))
         {
-            return source;
+            isSourceValid = true;
         }
         else
         {
@@ -327,22 +377,24 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
         return;
     }
 
-    setVersion();
+    cmakeFile << addHeaderComment();
 
     Project project{};
 
-    project.setName();
-    project.setVersion();
-    project.setDescription();
-    project.setLanguage();
-
-    cmakeFile << addHeaderComment();
-
+    setVersion();
     writeMinimumVersion(cmakeFile);
-    settingProject(cmakeFile, project);
+    settingProject(project);
+
+    // These to dependent of settingProject()
+    writingProject(cmakeFile, project);
     settingExecutable(cmakeFile, project);
 
     settingLibrary(cmakeFile);
+
+    if(!libraries.empty())
+    {
+        targetIncludeDirectory(cmakeFile);
+    }
 
     cmakeFile.close();
 
