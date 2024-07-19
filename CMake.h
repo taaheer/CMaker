@@ -24,6 +24,7 @@ class CMake
     const std::string defaultVersion{"3.7...3.29"};
     static constexpr double leastMinimumVersion{3.0};
     static constexpr double latestAvailableVersion{3.3};
+    static constexpr std::array<std::string, 3> scopes{"INTERFACE", "PUBLIC", "PRIVATE"};
     Project project{};
     std::string executableName{};
     std::vector<std::string> fileSources{};
@@ -34,7 +35,7 @@ class CMake
     std::string addCMakePolicy() const;
     bool isCMakeVersionValid(const std::string& input) const;
     bool isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types) const;
-    bool isScopeValid(const std::string &scope, const std::array<std::string, 3> &scopes) const;
+    bool isScopeValid(const std::string &scope) const;
     bool isCppStandardValid(const std::string &standard) const;
     void writingProject(std::ofstream &cmakeFile) const;
 

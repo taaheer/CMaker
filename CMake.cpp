@@ -206,7 +206,6 @@ void CMake::settingLibrary(std::ofstream &cmakeFile)
 
 void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
 {
-    const std::array<std::string, 3> scopes{"INTERFACE", "PUBLIC", "PRIVATE"};
     for(LibraryInfo &library : libraries)
     {
         do
@@ -219,7 +218,7 @@ void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
             std::cout << "): ";
             std::getline(std::cin, library.scope);
         }
-        while(!isScopeValid(library.scope, scopes));
+        while(!isScopeValid(library.scope));
 
         if(Utility::isStringNumeric(library.scope))
         {
@@ -242,6 +241,7 @@ void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
 void CMake::linkLibraryies(std::ofstream &cmakeFile)
 {
     std::string target{};
+    std::string scope{};
 
     for(const LibraryInfo &library : libraries)
     {
@@ -257,7 +257,24 @@ void CMake::linkLibraryies(std::ofstream &cmakeFile)
             target = executableName;
         }
 
-        cmakeFile << "target_link_libraries(" << target << ' ' << library.scope << ' ' << library.name << ")\n";
+        do
+        {
+            std::cout << "link scope of " << library.name << " ( ";
+            for(const std::string &option : scopes)
+            {
+                std::cout << option << ' ';
+            }
+            std::cout << "): ";
+            std::getline(std::cin, scope);
+        }
+        while(!isScopeValid(library.scope));
+
+        if(Utility::isStringNumeric(scope))
+        {
+            scope = Utility::getCorrespondingElementFromString(scope, scopes);
+        }
+
+        cmakeFile << "target_link_libraries(" << target << ' ' << scope << ' ' << library.name << ")\n";
     }
     cmakeFile << '\n';
 }
@@ -293,7 +310,7 @@ bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::st
     return false;
 }
 
-bool CMake::isScopeValid(const std::string &scope, const std::array<std::string, 3> &scopes) const
+bool CMake::isScopeValid(const std::string &scope) const
 {
     if(scope.empty())
     {
@@ -377,7 +394,12 @@ std::string CMake::getLibraryTypeFromUser()
 
     do
     {
-        std::cout << "Enter library type (enter for default): ";
+        std::cout << "Enter library type (enter for default) (type: ";
+        for(const std::string &option : types)
+        {
+            std::cout << option << ' ';
+        }
+        std::cout << "): ";
         std::getline(std::cin, type);
     }
     while(!isLibraryTypeValid(type, types));
