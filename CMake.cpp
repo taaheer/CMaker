@@ -173,14 +173,32 @@ void CMake::settingLibrary(std::ofstream &cmakeFile)
         }
 
         library.type = getLibraryTypeFromUser();
-        library.source = getLibrarySourceFromUser();
+
+        std::string source{};
+
+        do
+        {
+            source = getLibrarySourceFromUser(library);
+
+            if(!source.empty())
+            {
+                library.source.push_back(source);
+            }
+        }
+        while(!source.empty());
 
         libraries.push_back(library);
     }
 
     for(const LibraryInfo &lib : libraries)
     {
-        cmakeFile << "add_library(" << lib.name << ' ' << lib.type << ' ' << lib.source << ")\n";
+        cmakeFile << "add_library( " << lib.name << ' ' << lib.type << ' '; 
+        
+        for(const std::string &source : lib.source)
+        {
+            cmakeFile << source << ' ';
+        }
+        cmakeFile << ")\n";
     }
 
     cmakeFile << "\n";
@@ -236,10 +254,10 @@ void CMake::linkLibraryies(std::ofstream &cmakeFile, const Project &project)
 
         if(target.empty())
         {
-            target = project.getName();
+            target = executableName;
         }
 
-        cmakeFile << "target_link_libraries(" << target << ' ' << library.scope << ' ' << executableName << ")\n";
+        cmakeFile << "target_link_libraries(" << target << ' ' << library.scope << ' ' << library.name << ")\n";
     }
     cmakeFile << '\n';
 }
@@ -333,7 +351,7 @@ std::string CMake::getLibraryTypeFromUser()
     }
 }
 
-std::string CMake::getLibrarySourceFromUser()
+std::string CMake::getLibrarySourceFromUser(const LibraryInfo &library)
 {
     bool isSourceValid{false};
 
@@ -343,11 +361,11 @@ std::string CMake::getLibrarySourceFromUser()
         std::cout << "Enter the source: ";
         std::getline(std::cin, source);
 
-        if(source.empty())
+        if(source.empty() && library.source.size() == 0)
         {
-            std::cerr << "Error: no source provided\n";
+            std::cerr << "Error: need at least one source\n";
         }
-        else if(Utility::isSourceExist(source))
+        else if(source.empty() || Utility::isSourceExist(source) )
         {
             isSourceValid = true;
         }

@@ -12,7 +12,7 @@ struct LibraryInfo
 {
     std::string name{};
     std::string type{};
-    std::string source{};
+    std::vector<std::string> source{};
     std::string scope{};
     std::string directory{};
 };
@@ -44,7 +44,7 @@ class CMake
 
     std::string getLibraryNameFromUser();
     std::string getLibraryTypeFromUser();
-    std::string getLibrarySourceFromUser();
+    std::string getLibrarySourceFromUser(const LibraryInfo &library);
 
     void setVersion();
     void setExecutableName();
