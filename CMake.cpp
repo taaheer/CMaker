@@ -221,6 +221,29 @@ void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
     cmakeFile << '\n';
 }
 
+void CMake::linkLibraryies(std::ofstream &cmakeFile, const Project &project)
+{
+    std::string target{};
+
+    for(const LibraryInfo &library : libraries)
+    {
+        do
+        {
+            std::cout << "Enter the target for " << library.name << " (enter to use executable name as target): ";
+            std::getline(std::cin, target);
+        }
+        while(!Common::isNameValid(target, true));
+
+        if(target.empty())
+        {
+            target = project.getName();
+        }
+
+        cmakeFile << "target_link_libraries(" << target << ' ' << library.scope << ' ' << executableName << ")\n";
+    }
+    cmakeFile << '\n';
+}
+
 bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types) const
 {
     if(type.empty())
@@ -394,6 +417,7 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
     if(!libraries.empty())
     {
         targetIncludeDirectory(cmakeFile);
+        linkLibraryies(cmakeFile, project);
     }
 
     cmakeFile.close();

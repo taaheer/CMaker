@@ -40,6 +40,7 @@ class CMake
     void settingExecutable(std::ofstream &cmakeFile, const Project &project);
     void settingLibrary(std::ofstream &cmakeFile);
     void targetIncludeDirectory(std::ofstream &cmakeFile);
+    void linkLibraryies(std::ofstream &cmakeFile, const Project &project);
 
     std::string getLibraryNameFromUser();
     std::string getLibraryTypeFromUser();
