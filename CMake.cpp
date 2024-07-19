@@ -127,7 +127,7 @@ void CMake::writeMinimumVersion(std::ofstream &cmakeFile) const
     cmakeFile << addCMakePolicy();
 }
 
-void CMake::writingProject(std::ofstream &cmakeFile, const Project &project) const
+void CMake::writingProject(std::ofstream &cmakeFile) const
 {
     cmakeFile << "project(" << project.getName(); 
 
@@ -144,12 +144,12 @@ void CMake::writingProject(std::ofstream &cmakeFile, const Project &project) con
     cmakeFile << " LANGUAGES " << project.getLanguage() <<")\n\n";
 }
 
-void CMake::settingExecutable(std::ofstream &cmakeFile, const Project &project)
+void CMake::settingExecutable(std::ofstream &cmakeFile)
 {
     setExecutableName();
     setFileSource();
 
-    cmakeFile << "add_executable( " << getExecutableName(project) << ' ';
+    cmakeFile << "add_executable( " << getExecutableName() << ' ';
     
     for(const std::string &source : getFileSource())
     {
@@ -239,7 +239,7 @@ void CMake::targetIncludeDirectory(std::ofstream &cmakeFile)
     cmakeFile << '\n';
 }
 
-void CMake::linkLibraryies(std::ofstream &cmakeFile, const Project &project)
+void CMake::linkLibraryies(std::ofstream &cmakeFile)
 {
     std::string target{};
 
@@ -260,6 +260,18 @@ void CMake::linkLibraryies(std::ofstream &cmakeFile, const Project &project)
         cmakeFile << "target_link_libraries(" << target << ' ' << library.scope << ' ' << library.name << ")\n";
     }
     cmakeFile << '\n';
+}
+
+void CMake::setCppStandard(std::ofstream &cmakeFile)
+{
+    do
+    {
+        std::cout << "Enter C++ standard: ";
+        std::getline(std::cin, cppStandard);
+    }
+    while(!isCppStandardValid(cppStandard));
+
+    cmakeFile << "set_property(TARGET " << getExecutableName() << " PROPERTY CXX_STANDARD " << cppStandard << ")\n\n";
 }
 
 bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types) const
@@ -301,7 +313,42 @@ bool CMake::isScopeValid(const std::string &scope, const std::array<std::string,
     return false;
 }
 
-void CMake::settingProject(Project &project) const
+bool CMake::isCppStandardValid(const std::string &standard) const
+{
+    if(Utility::isStringNumeric(standard))
+    {
+        int num{std::stoi(standard)};
+
+        switch (num)
+        {
+            case 98:
+            case 11:
+            case 14:
+            case 17:
+            case 20:
+            case 23:
+                return true;
+                break;
+            
+            case 26:
+                std::cerr << "Warning: compiler may not support\n";
+                return true;
+                break;
+
+            default:
+                std::cerr << "Error: unsupported standard\n";
+                return false;
+                break;
+        }
+    }
+    else
+    {
+        std::cerr << "Error: wrong input\n";
+        return false;
+    }
+}
+
+void CMake::settingProject()
 {
     project.setName();
     project.setVersion();
@@ -390,7 +437,7 @@ std::string CMake::getVersion() const
     }
 }
 
-std::string CMake::getExecutableName(const Project &project) const
+std::string CMake::getExecutableName() const
 {
     if(executableName.empty())
     {
@@ -420,22 +467,25 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     cmakeFile << addHeaderComment();
 
-    Project project{};
-
     setVersion();
     writeMinimumVersion(cmakeFile);
-    settingProject(project);
+    settingProject();
 
     // These to dependent of settingProject()
-    writingProject(cmakeFile, project);
-    settingExecutable(cmakeFile, project);
+    writingProject(cmakeFile);
+    settingExecutable(cmakeFile);
 
     settingLibrary(cmakeFile);
 
     if(!libraries.empty())
     {
         targetIncludeDirectory(cmakeFile);
-        linkLibraryies(cmakeFile, project);
+        linkLibraryies(cmakeFile);
+    }
+
+    if(project.getLanguage() == "CXX")
+    {
+        setCppStandard(cmakeFile);
     }
 
     cmakeFile.close();
