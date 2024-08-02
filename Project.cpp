@@ -47,6 +47,12 @@ void Project::setDescription()
     std::getline(std::cin, description);
 }
 
+void Project::setHomageUrl()
+{
+    std::cout << "Enter homepage link of project (enter to skip): ";
+    std::getline(std::cin, homepageUrl);
+}
+
 void Project::setLanguage()
 {
     do
@@ -75,6 +81,11 @@ std::string Project::getVersion() const
 std::string Project::getDescription() const
 {
     return description;
+}
+
+std::string Project::getHomepageUrl() const
+{
+    return homepageUrl;
 }
 
 std::string Project::getLanguage() const

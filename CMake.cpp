@@ -11,20 +11,245 @@
 #include <string>       // for strings and std::stod
 #include <algorithm>    // for std::find
 
+// Ask CMake version until its valid
+std::string CMake::getCMakeVersionFromUser(const std::string &message)
+{
+    std::string version{};
+    do
+    {
+        std::cout << message;
+        std::getline(std::cin, version);
+    }
+    while(!isCMakeVersionValid(version));
+
+    return version;
+}
+
+void CMake::settingPolicyByCMakeVersion(std::ofstream &cmakeFile)
+{
+    std::string version{getCMakeVersionFromUser("Enter Minimum version for Policy (enter to set " + getCMakeRequiredVersion() + "): ")};
+    std::string maxVersion{};
+    
+    if(!minimumRequiredVersion.empty() || !version.empty())
+    {
+        maxVersion = getCMakeVersionFromUser("Enter the policy_max (enter to skip):");
+    }
+
+    cmake_policy(cmakeFile, version, maxVersion);
+
+}
+
+// Write cmake_policy(VERSION <version>)
+// or cmake_policy(VERSION <version>...<max>)
+void CMake::cmake_policy(std::ofstream &cmakeFile, const std::string &version, const std::string &maxVersion)
+{
+    cmakeFile << "cmake_policy(VERSION ";
+
+    if(!version.empty())
+    {
+        cmakeFile << version;
+    }
+    else
+    {
+        cmakeFile << getCMakeRequiredVersion();
+    }
+
+    if(!minimumRequiredVersion.empty() || !version.empty())
+    {
+        if(!maxVersion.empty())
+        {
+            cmakeFile << "..." << maxVersion;
+        }
+    }
+
+    cmakeFile << ")\n\n";
+}
+
+// Ask user for CMake policy CMP<index>
+std::vector<Policy> CMake::getPoliciesFromUser()
+{
+    std::vector<Policy> policies{};
+
+    while(true)
+    {
+        Policy policy;
+        std::cout << "Enter index number (enter to exit): CMP";
+        getline(std::cin, policy.integerIndex);
+
+        if(policy.integerIndex.empty())
+        {
+            break;
+        }
+
+        if(!Utility::isStringNumeric(policy.integerIndex))
+        {
+            std::cerr << "Error: its not an integer\n";
+            continue;
+        }
+
+        int integerIndex{std::stoi(policy.integerIndex)};
+
+        if(integerIndex >= 0 && integerIndex <= 170)
+        {
+            std::string newOld{};
+            while(true)
+            {
+                std::cout << "OLD|NEW (o/n): ";
+                std::getline(std::cin, newOld);
+
+                if(newOld.empty())
+                {
+                    std::cerr << "Error: input was empty\n";
+                    continue; 
+                }
+
+                newOld = Utility::toLowerCase(newOld);
+
+                if(newOld == "o" || newOld == "old")
+                {
+                    policy.newOld = true;
+                    break;
+                }
+                else if(newOld == "n" || newOld == "new")
+                {
+                    policy.newOld = false;
+                    break;
+                }
+                else
+                {
+                    std::cerr << "Error: wrong input\n";
+                }
+            }
+
+            policies.push_back(policy);
+        }
+    }
+
+    return policies;
+}
+
+void CMake::settingPolicyExplicitly(std::ofstream &cmakeFile)
+{
+    std::vector<Policy> policies{getPoliciesFromUser()};
+
+    cmake_policy(cmakeFile, policies);
+}
+
+// Write cmake_policy(SET CMP<index> <OLD|NEW>)
+void CMake::cmake_policy(std::ofstream &cmakeFile, const std::vector<Policy> &policies)
+{
+    for(const Policy &policy : policies)
+    {
+        cmakeFile << "cmake_policy(SET CMP" << Utility::getStringDigitLengthOf(4, policy.integerIndex) << ' ';
+        if(policy.newOld)
+        {
+            cmakeFile << "OLD";
+        }
+        else
+        {
+            cmakeFile << "NEW";
+        }
+        cmakeFile << ")\n";
+    }
+
+    cmakeFile << '\n';
+}
+
+// Todo
+// Not implement because no idea how to implement
+void CMake::settingPolicyStack()
+{
+    std::cerr << "Note: this feature not implemented because I have no idea how should I implement this\n";
+}
+
+void CMake::cmakeMinimumRequired(std::ofstream &cmakeFile)
+{
+    minimumRequiredVersion = getCMakeVersionFromUser("Enter Minimum required version of CMake (skip to set " + defaultMinimumRequiredVersion + " as default): ");
+
+    std::string policyMax{};
+
+    if(!minimumRequiredVersion.empty())
+    {
+
+        policyMax = getCMakeVersionFromUser("Enter the policy_max (enter to skip):");
+    }
+
+    cmake_minimum_required(cmakeFile, policyMax);
+}
+
+// Write cmake_minimun_required(VERSION <version>)
+// or cmake_minimum_required(VERSION <version>...<max>)
+void CMake::cmake_minimum_required(std::ofstream &cmakeFile, const std::string &policyMax)
+{
+    cmakeFile << "cmake_minimum_required(VERSION ";
+    if(!minimumRequiredVersion.empty())
+    {
+        cmakeFile << minimumRequiredVersion;
+
+        if(!policyMax.empty())
+        {
+            cmakeFile << "..." << policyMax;
+        }
+    }
+    else
+    {
+        cmakeFile << defaultMinimumRequiredVersion;
+    }
+
+    cmakeFile << ")\n\n";
+}
+
+void CMake::cmakePolicySetOptions(std::ofstream &cmakeFile)
+{
+    bool isValid{false};
+
+    const std::array<std::string, 3> options{"Setting Policies by CMake Version", "Setting Policies Explicitly", "CMake Policy Stack"};
+    
+    while(!isValid)
+    {
+        std::string option{promptWithOption(options, "select CMake policy setting (enter to skip):", true)};
+
+        if(option.empty())
+        {
+            isValid = true;
+            break;
+        }
+
+        int optionNumber{std::stoi(option)};
+
+        switch (optionNumber)
+        {
+        case 0:
+            settingPolicyByCMakeVersion(cmakeFile);
+            break;
+        case 1:
+            settingPolicyExplicitly(cmakeFile);
+            break;
+        case 2:
+            settingPolicyStack();
+            break;
+        
+        default:
+            break;
+        }
+    }
+}
+
+std::string CMake::getCMakeRequiredVersion() const
+{
+    if(!minimumRequiredVersion.empty())
+    {
+        return minimumRequiredVersion;
+    }
+
+    return defaultMinimumRequiredVersion;
+}
+
+// Add comment that it was generated by CMake
 std::string CMake::addHeaderComment() const
 {
     return "# This was generated by CMaker https://github.com/taaheer/CMaker\n"
     "# With modern pratice and suggestion from https://cliutils.gitlab.io/modern-cmake/\n\n";
-}
-
-void CMake::setVersion()
-{
-    do
-    {
-        std::cout << "Enter version (enter to set default): ";
-        std::getline(std::cin, version);
-    }
-    while(!isCMakeVersionValid(version));
 }
 
 void CMake::setExecutableName()
@@ -38,21 +263,28 @@ void CMake::setExecutableName()
     while(!Common::isNameValid(executableName, isEmptyEnterValid));
 }
 
-void CMake::setFileSource()
+std::vector<std::string> CMake::getFilesSourcesFromUser()
 {
+    std::vector<std::string> sources{};
     std::string source{};
     bool isValid{false};
+    std::string added{};
 
     while(!isValid)
     {
-        std::cout << "Enter file sources (enter for next step): ";
+        if(!source.empty())
+        {
+            std::cout << "added" << '(' << sources.size() << "):" << added << '\n';
+        }
+        std::cout << "Enter file sources (enter to skip): ";
         std::getline(std::cin, source);
 
         if(source.empty())
         {
-            if(fileSources.empty())
+            if(sources.empty())
             {
-                std::cerr << "Error: need at least one source\n";
+                std::cerr << "Note: New in version 3.11: The source files can be omitted if they are added later using target_sources().\n";
+                isValid = true;
             }
             else
             {
@@ -61,28 +293,16 @@ void CMake::setFileSource()
         }
         else if(Utility::isSourceExist(source))
         {
-            fileSources.push_back(source);
+            sources.push_back(source);
+            added += ' ' + source;
         }
         else
         {
             std::cerr << "Error: " << source << " does not exist\n";
         }
     }
-}
 
-std::string CMake::addCMakePolicy() const
-{
-    std::string lessThanVersion{"3.12"};
-    if(!version.empty())
-    {
-        lessThanVersion = version;
-    }
-
-    std::string policy{"if(${CMAKE_VERSION} VERSION_LESS " + lessThanVersion + ")\n"
-    "\tcmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})\n"
-    "endif()\n\n"};
-
-    return policy;
+    return sources;
 }
 
 bool CMake::isCMakeVersionValid(const std::string &input) const
@@ -121,13 +341,180 @@ bool CMake::isCMakeVersionValid(const std::string &input) const
     }
 }
 
-void CMake::writeMinimumVersion(std::ofstream &cmakeFile) const
+std::string CMake::getExecutableNameFromUser()
 {
-    cmakeFile << "cmake_minimum_required(VERSION " << getVersion() << ")\n\n";
-    cmakeFile << addCMakePolicy();
+    std::string name{};
+
+    do
+    {
+        std::cout << "Enter executable name (Enter to set " << project.getName() << " as executable name): ";
+        std::getline(std::cin, name);
+    }
+    while(!Common::isNameValid(name, true));
+
+    return name;
 }
 
-void CMake::writingProject(std::ofstream &cmakeFile) const
+bool CMake::setGlobalFromUser()
+{
+    std::string input{};
+    bool isGlobal{};
+
+    while(true)
+    {
+        std::cout << "Set global? (y/n): ";
+        std::getline(std::cin, input);
+
+        if(input.empty())
+        {
+            std::cerr << "Error: input was empty\n";
+            continue; 
+        }
+
+        input = Utility::toLowerCase(input);
+
+        if(input == "y" || input == "yes")
+        {
+            isGlobal = true;
+            break;
+        }
+        else if(input == "n" || input == "no")
+        {
+            isGlobal = false;
+            break;
+        }
+        else
+        {
+            std::cerr << "Error: wrong input\n";
+        }
+    }
+
+    return isGlobal;
+}
+
+std::string CMake::getExecutableOptionFromUser()
+{
+    std::array<std::string, 3> options{"WIN32_EXECUTABLE", "MACOSX_BUNDLE", "EXCLUDE_FROM_ALL"};
+
+    std::string option{promptWithOption(options, "Choose an option (enter to skip): ", true)};
+
+    if(!option.empty())
+    {
+        return Utility::getCorrespondingElementFromString(option, options); 
+    }
+    else
+    {
+        return {};
+    }
+
+}
+
+std::string CMake::getCXXStandardFromUser()
+{
+    std::string standard{};
+
+    do
+    {
+        std::cout << "Enter C++ standard (e.g. 23): ";
+        std::getline(std::cin, standard);
+    }
+    while(!isCppStandardValid(standard));
+
+    return standard;
+}
+
+bool CMake::isCXXStandardRequiredFromUser()
+{
+    std::string input{};
+    while(true)
+    {
+        std::cout << "set " << cxxStandard << " as required (y/n): ";
+        std::getline(std::cin, input);
+
+        std::string lowerCase{Utility::toLowerCase(input)};
+
+        if(input.empty())
+        {
+            std::cerr << "Setting " << cxxStandard << " as required\n";
+            return true;
+        } 
+
+        if(lowerCase == "y" || lowerCase == "yes")
+        {
+            return true;
+        }
+        else if(lowerCase == "n" || lowerCase == "no")
+        {
+            return false;
+        }
+    }
+}
+
+void CMake::set(std::ofstream &cmakeFile, std::string variable, std::string value)
+{
+    cmakeFile << "set(" << variable << ' ' << value << ")\n";
+}
+
+void CMake::normalExecutable(std::ofstream &cmakeFile)
+{
+    executableName = getExecutableNameFromUser();
+    std::string option{getExecutableOptionFromUser()};
+    std::vector<std::string> sources{getFilesSourcesFromUser()};
+
+    add_executable(cmakeFile, getExecutableName(), option, sources);
+}
+
+void CMake::add_executable(std::ofstream &cmakeFile, const std::string &name, const std::string &option, const std::vector<std::string> &sources)
+{
+    cmakeFile << "add_executable(" << name << ' ';
+
+    if(!option.empty())
+    {
+        cmakeFile << option;
+    }
+
+    for(const std::string &source : sources)
+    {
+        cmakeFile << ' ' << source;
+    }
+
+    cmakeFile << ")\n";
+}
+
+void CMake::importedExecutable(std::ofstream &cmakeFile)
+{
+    executableName = getExecutableNameFromUser();
+    bool isGlobal{setGlobalFromUser()};
+
+    add_executable(cmakeFile, getExecutableName(), isGlobal);
+}
+
+void CMake::add_executable(std::ofstream &cmakeFile, const std::string &name, bool isGlobal)
+{
+    cmakeFile << "add_executable(" << name << " IMPORTED ";
+    if(isGlobal)
+    {
+        cmakeFile << "GLOBAL";
+    }
+    cmakeFile << ")\n\n";
+}
+
+void CMake::settingCXXStandard(std::ofstream &cmakeFile)
+{
+    cxxStandard = getCXXStandardFromUser();
+    bool required{isCXXStandardRequiredFromUser()};
+
+    set(cmakeFile, "CMAKE_CXX_STANDARD", cxxStandard);
+
+    if(required)
+    {
+        set(cmakeFile, "CMAKE_CXX_STANDARD_REQUIRED", "True");
+    }
+}
+
+// Write project(<name> LANGUAGE <language>)
+// optionally project(<name> VERSION <version> DESCRIPTION <description> HOMEPAGE_URL <url> LANGAUGE <language>)
+void CMake::writeProject(std::ofstream &cmakeFile) const
 {
     cmakeFile << "project(" << project.getName(); 
 
@@ -140,23 +527,54 @@ void CMake::writingProject(std::ofstream &cmakeFile) const
     {
         cmakeFile << " DESCRIPTION \"" << project.getDescription() << "\"";
     }
+
+    if(!project.getHomepageUrl().empty())
+    {
+        cmakeFile << " HOMEPAGE_URL \"" << project.getHomepageUrl() << "\"";
+    }
             
     cmakeFile << " LANGUAGES " << project.getLanguage() <<")\n\n";
 }
 
 void CMake::settingExecutable(std::ofstream &cmakeFile)
 {
-    setExecutableName();
-    setFileSource();
+    bool isValid{false};
 
-    cmakeFile << "add_executable( " << getExecutableName() << ' ';
+    const std::array<std::string, 2> options{"Normal Executable", "Imported Executable"};
+    bool isNameSet{false};
     
-    for(const std::string &source : getFileSource())
+    while(!isValid)
     {
-        cmakeFile << source << ' ';
-    }
+        std::string option{promptWithOption(options, "select Executable type:", true)};
 
-    cmakeFile << ")\n\n";
+        if(option.empty() && !isNameSet)
+        {
+            std::cerr << "Error: executable name is required\n";
+            continue;
+        }
+        else if(option.empty() && isNameSet)
+        {
+            isValid = true;
+            break;
+        }
+
+        int optionNumber{std::stoi(option)};
+
+        switch (optionNumber)
+        {
+        case 0:
+            normalExecutable(cmakeFile);
+            isNameSet = true;
+            break;
+        case 1:
+            importedExecutable(cmakeFile);
+            isNameSet = true;
+            break;
+        
+        default:
+            break;
+        }
+    }
 }
 
 void CMake::settingLibrary(std::ofstream &cmakeFile)
@@ -279,18 +697,6 @@ void CMake::linkLibraryies(std::ofstream &cmakeFile)
     cmakeFile << '\n';
 }
 
-void CMake::setCppStandard(std::ofstream &cmakeFile)
-{
-    do
-    {
-        std::cout << "Enter C++ standard: ";
-        std::getline(std::cin, cppStandard);
-    }
-    while(!isCppStandardValid(cppStandard));
-
-    cmakeFile << "set_property(TARGET " << getExecutableName() << " PROPERTY CXX_STANDARD " << cppStandard << ")\n\n";
-}
-
 bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::string, 3> &types) const
 {
     if(type.empty())
@@ -299,7 +705,7 @@ bool CMake::isLibraryTypeValid(const std::string &type, const std::array<std::st
     }
     else if(Utility::isStringNumeric(type))
     {
-        return Utility::isNumericStringInRange(type, types);
+        return Utility::isNumericStringInRange(type, types.size());
     }
     else if(std::find(types.begin(), types.end(), type) != types.end())
     {
@@ -319,7 +725,7 @@ bool CMake::isScopeValid(const std::string &scope) const
     }
     else if(Utility::isStringNumeric(scope))
     {
-        return Utility::isNumericStringInRange(scope, scopes);
+        return Utility::isNumericStringInRange(scope, scopes.size());
     }
     else if(std::find(scopes.begin(), scopes.end(), scope) != scopes.end())
     {
@@ -332,6 +738,12 @@ bool CMake::isScopeValid(const std::string &scope) const
 
 bool CMake::isCppStandardValid(const std::string &standard) const
 {
+    if(standard.empty())
+    {
+        std::cerr << "Error: No input was given\n";
+        return false;
+    }
+
     if(Utility::isStringNumeric(standard))
     {
         int num{std::stoi(standard)};
@@ -365,12 +777,15 @@ bool CMake::isCppStandardValid(const std::string &standard) const
     }
 }
 
-void CMake::settingProject()
+void CMake::settingProject(std::ofstream &cmakeFile)
 {
     project.setName();
     project.setVersion();
     project.setDescription();
+    project.setHomageUrl();
     project.setLanguage();
+
+    writeProject(cmakeFile);
 }
 
 std::string CMake::getLibraryNameFromUser()
@@ -447,18 +862,6 @@ std::string CMake::getLibrarySourceFromUser(const LibraryInfo &library)
     return source;
 }
 
-std::string CMake::getVersion() const
-{
-    if(version.empty())
-    {
-        return defaultVersion;
-    }
-    else
-    {
-        return version;
-    }
-}
-
 std::string CMake::getExecutableName() const
 {
     if(executableName.empty())
@@ -469,11 +872,6 @@ std::string CMake::getExecutableName() const
     {
         return executableName;
     }
-}
-
-std::vector<std::string> CMake::getFileSource() const
-{
-    return fileSources;
 }
 
 void CMake::generateCMake([[maybe_unused]]std::size_t count)
@@ -489,14 +887,23 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
 
     cmakeFile << addHeaderComment();
 
-    setVersion();
-    writeMinimumVersion(cmakeFile);
-    settingProject();
+    cmakeMinimumRequired(cmakeFile);
+    cmakePolicySetOptions(cmakeFile);
+
+    settingProject(cmakeFile);
+
 
     // These to dependent of settingProject()
-    writingProject(cmakeFile);
     settingExecutable(cmakeFile);
 
+    if(project.getLanguage() == "CXX")
+    {
+        settingCXXStandard(cmakeFile);
+    }
+
+    cmakeFile.close();
+
+    // refactor
     settingLibrary(cmakeFile);
 
     if(!libraries.empty())
@@ -505,10 +912,6 @@ void CMake::generateCMake([[maybe_unused]]std::size_t count)
         linkLibraryies(cmakeFile);
     }
 
-    if(project.getLanguage() == "CXX")
-    {
-        setCppStandard(cmakeFile);
-    }
 
     cmakeFile.close();
 
